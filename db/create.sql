@@ -1,0 +1,1 @@
+CREATE TABLE sys_mavlog (key TEXT, val TEXT);

@@ -1,0 +1,27 @@
+{
+  "mavlink": {
+    "port": "/dev/ttyUSB0",
+    "baudrate": "115200"
+  },
+  "server": {
+    "port": 8080,
+    "require_auth": 0,
+    "username": "",
+    "password": "",
+    "mimetypes": {
+      "html": "text/html",
+      "jpeg": "image/jpeg",
+      "jpg": "image/jpeg",
+      "png": "image/png",
+      "js": "text/javascript",
+      "css": "text/css"
+    }
+  },
+  "debug": {
+    "enabled": 0
+  },
+  "database": {
+    "file": "db/data.sqlite3",
+    "script": "db/create.sql"
+  }
+}
