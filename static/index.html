@@ -73,8 +73,23 @@
 				});
 
 				// Handle Record-button click
-
+				document.getElementById('btn_record').addEventListener('click',function(){
+					socket.emit('gui_record');
+				});
+				socket.on('gui_recording', function() {
+					document.getElementById('btn_record_text').innerHTML = 'Stop';
+					document.getElementById('ico_record').style.display = 'inline-block';
+					console.log('gui_recording');
+				});
+				socket.on('gui_recording_end', function() {
+					document.getElementById('btn_record_text').innerHTML = 'Record';
+					document.getElementById('ico_record').style.display = 'None';
+					console.log('gui_recording');
+				});
 				// Handle Reboot-button click
+				document.getElementById('btn_reboot').addEventListener('click',function(){
+					socket.emit('gui_reboot');
+				});
 
 			});
 		</script>
@@ -118,11 +133,14 @@
 			.hud-text {
 				margin-right:6px;
 			}
-			.hud-red * {
-				color:#FF9999;
+			.hud-red *, .hud-red {
+				color:#FF9999 !important;
 			}
-			.hud-green * {
-				color:#99FF99;
+			.hud-darkred *, .hud-darkred {
+				color:#FF3232 !important;
+			}
+			.hud-green *, .hud-green {
+				color:#99FF99 !important;
 			}
 
 			@media (max-width: 767px) {
@@ -151,6 +169,8 @@
 					margin-right:6px ;
 				}
 			}
+
+			#ico_record { display:none; }
 		</style>
 	</head>
 	<body>
@@ -167,7 +187,7 @@
 				<ul class="nav navbar-nav navbar-right">
 					<li class="active"><a href="#" id="btn_overview">Overview</a></li>
 					<li><a href="#" id="btn_params">Parameters</a></li>
-					<li><a href="#" id="btn_record">Record</a></li>
+					<li><a href="#" id="btn_record"><span class="fa fa-circle hud-icon hud-darkred" id="ico_record"></span><span id="btn_record_text">Record</span></a></li>
 					<li><a href="#" id="btn_reboot">Reboot</a></li>
 				</ul>
 			</nav>

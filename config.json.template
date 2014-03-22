@@ -3,6 +3,11 @@
     "port": "/dev/ttyUSB0",
     "baudrate": "115200"
   },
+  "video": {
+    "video_dir":"videos/",
+    "cmd_start_record":"raspivid",
+    "cmd_start_options": ["-n", "-w", "1920", "-vf", "-hf", "-h", "1080", "-fps", "25", "-b", "15000000", "-t", "0", "-o", "dummy(is replaced with filename)"]
+  },
   "server": {
     "port": 8080,
     "require_auth": 0,
@@ -16,6 +21,15 @@
       "js": "text/javascript",
       "css": "text/css"
     }
+  },
+  "udp_relay": {
+    "enable": false,
+    "host": "192.168.1.2",
+    "port": "14550"
+  },
+  "tcp_relay": {
+    "enable": false,
+    "port": "5000"
   },
   "debug": {
     "enabled": 0

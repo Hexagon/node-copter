@@ -3,6 +3,8 @@
 db/*
 !db/create.sql
 
+videos/*
+
 config.json
 
 ##node.js
