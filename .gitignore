@@ -4,6 +4,7 @@ db/*
 !db/create.sql
 
 videos/*
+!videos/.gitignore
 
 config.json
 
