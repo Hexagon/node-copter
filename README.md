@@ -7,6 +7,17 @@ node.js powered web-interface for your tri/quad/hexa/octa/helicopter. Socket.io 
 ![node-copter web interface](/docs/screenshot-web.png)
 ![node-copter mobile interface](/docs/screenshot-mob.png)
 
+
+Features
+
+===
+
+	* MAVLink connectivity (arducopter, megapirate)
+	* TCP and UDP relaying of raw mavlink-packets
+	* HTML5 interface
+	* Raspberry pi camera support (start/stop recording)
+
+
 Installation
 
 ===
@@ -18,3 +29,10 @@ Dependencies:
 	socket.io
 	sqlite3
 	serialport
+
+Start on boot: 
+	copy docs/nodecopter.initscript to /etc/init.d/nodecopter
+	edit DIR (working directory) USER (some user with write permissions in working directory) and DAEMON (usually have to include full path to node) in the new file
+	sudo chmod +x /etc/init.d/nodecopter
+	update-rc.d nodecopter defaults
+
