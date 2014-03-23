@@ -15,12 +15,12 @@ module.exports = {
     // Create
     if (exists) {
 
-      var doc_template = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n\t<document>';
+      var doc_template = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n\t<Document>';
       doc_template += '\n\t\t<name>{{tpl_name}}</name>';
       doc_template += '\n\t\t<description>{{tpl_description}}</description>';
       //doc_template += '{{tpl_styles}}';
       doc_template += '{{tpl_placemarks}}';
-      doc_template += '\n\t</document>';
+      doc_template += '\n\t</Document>';
       doc_template += '\n</kml>';
 
       /*<Style id="yellowLineGreenPoly">
@@ -62,13 +62,13 @@ module.exports = {
       db.all("SELECT * FROM gps_raw_int WHERE fix_type > 1", function(error,result) {
 
         var placemarks = "";
-
+        var coordinates = "";
         for(i in result) {
           var row = result[i]
             , tpl_instance = placemark_template;
-          placemarks += tpl_instance.replace('{{tpl_coordinates}}',(row.lat/10000000).toString().replace(',','.') + ',' + (row.lon/10000000).toString().replace(',','.') + ',' + (row.alt/1000).toString().replace(',','.'));
+          coordinates +=(row.lon/10000000).toString().replace(',','.') + ',' + (row.lat/10000000).toString().replace(',','.') + ',' + (row.alt/1000).toString().replace(',','.') + "\r\n";
         }
-
+        placemarks = tpl_instance.replace('{{tpl_coordinates}}',coordinates);
         doc_template = doc_template.replace('{{tpl_name}}', config.aircraft.name + '\'s flight path');
         doc_template = doc_template.replace('{{tpl_description}}', 'From database ' + file);
         doc_template = doc_template.replace('{{tpl_placemarks}}', placemarks);
