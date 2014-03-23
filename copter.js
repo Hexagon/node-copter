@@ -110,7 +110,11 @@ datasource.Init(function()  {
 							socket.emit('gui_recording_end');
 						}
 
-						socket.on('mav_home_position', function (data) {});
+						socket.on('disk_usage', function (data) {
+							cp.exec("df / | grep \"/\" | tr -s \" \" | cut -d\" \" -f5", function(error, stdout, stderr){ 
+								socket.emit('disk_usage_result',stdout);
+							});
+						});
 
 						// Handle socket.io errors
 						socket.on('error', function (err) {
