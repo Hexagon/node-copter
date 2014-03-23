@@ -14,8 +14,15 @@ Features
 
 	* MAVLink connectivity (arducopter, megapirate)
 	* TCP and UDP relaying of raw mavlink-packets
+	* Raspberry pi camera support
 	* HTML5 interface
-	* Raspberry pi camera support (start/stop recording)
+           * Start/Stop recording video
+           * Live hud (speed, gps-reception, mode etc.)
+           * Disk storage indicator
+           * Live position on openstreetmap/google sat
+           * Flightdata logging to sqlite-database
+           * KML (Google Earth) export of flight path
+           * Direct download of recorded video
 
 
 Installation
