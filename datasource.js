@@ -1,13 +1,14 @@
 var sqlite3 = require("sqlite3"),
   config = require('./config.json'),
   fs = require('fs'),
-  path = require('path');
+  path = require('path'),
+  helpers = require('./helpers.js');
 
 module.exports = {
   Init: function (callback) {
 
     // Initiate sqlite3 database
-    var db_file = path.join(__dirname, config.database.file);
+    var db_file = path.join(__dirname, 'db/'+helpers.getDateTime() + '.log.sqlite3');
     var exists = fs.existsSync(db_file);
     db = new sqlite3.Database(db_file);
     this.db = db;

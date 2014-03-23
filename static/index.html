@@ -18,6 +18,15 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="/js/google.js"></script>
 		<script>
+			function switch_container(name) {
+				// Hide all
+				document.getElementById('map_container').style.display = 'none';
+				document.getElementById('logs_container').style.display = 'none';
+				document.getElementById('videos_container').style.display = 'none';
+				// Show current
+				document.getElementById(name).style.display = 'block';
+			}
+
 			document.addEventListener('DOMContentLoaded',function(){
 				// Document ready
 
@@ -95,14 +104,45 @@
 				// Request HDD usage every 10 seconds
 				var hdd = function() {
 					socket.emit('disk_usage');
-					setTimeout('hdd()',10000);
+					setTimeout(function(){hdd();},10000);
 				}; hdd();
 
 				socket.on('disk_usage_result',function(data) {
-					console.log('dur',data);
 					document.getElementById('hud_disk').innerHTML = data;
 				});
 
+				// Page switchers
+				document.getElementById('btn_map').addEventListener('click', function() {
+					switch_container('map_container');
+				});
+				document.getElementById('btn_logs').addEventListener('click', function() {
+					switch_container('logs_container');
+					socket.emit('request_logs');
+				});
+				document.getElementById('btn_videos').addEventListener('click', function() {
+					switch_container('videos_container');
+					socket.emit('request_videos');
+				});
+				socket.on('logs_result',function(data) {
+					console.log('got',data);
+					document.getElementById('logs_table_body').innerHTML = '';
+					for(i in data) {
+						var item = data[i];
+						if(item!='.gitignore'&&item.substr(item.length-1,1)!='l') {
+							document.getElementById('logs_table_body').innerHTML += '<td>'+item+'</td><td><a href="db/'+item+'" target="blank">Download</a></td>';
+						}
+					}
+				});
+				socket.on('videos_result',function(data) {
+					console.log('got2',data);
+					document.getElementById('videos_table_body').innerHTML = '';
+					for(i in data) {
+						var item = data[i];
+						if(item!='.gitignore') {
+							document.getElementById('videos_table_body').innerHTML += '<td>'+item+'</td><td><a href="videos/'+item+'" target="blank">Download</a></td>';
+						}
+					}	
+				});
 			});
 		</script>
 		<!-- local css -->
@@ -182,7 +222,8 @@
 				}
 			}
 
-			#ico_record { display:none; }
+			#ico_record, #logs_container, #videos_container { display:none; }
+
 		</style>
 	</head>
 	<body>
@@ -197,8 +238,9 @@
 			</div>
 			<nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
 				<ul class="nav navbar-nav navbar-right">
-					<li class="active"><a href="#" id="btn_overview">Overview</a></li>
-					<li><a href="#" id="btn_params">Parameters</a></li>
+					<li class="active"><a href="#" id="btn_map">Overview</a></li>
+					<li><a href="#" id="btn_logs">Logs</a></li>
+					<li><a href="#" id="btn_videos">Videos</a></li>
 					<li><a href="#" id="btn_record"><span class="fa fa-circle hud-icon hud-darkred" id="ico_record"></span><span id="btn_record_text">Record</span></a></li>
 					<li><a href="#" id="btn_reboot">Reboot</a></li>
 				</ul>
@@ -243,12 +285,16 @@
 			</ul>
 		</div>
 	</header>
-    <div class="bs-docs-header" id="content">
-      <div class="container" id="map_container">
-      </div>
-    </div>
 	<div class="container fill" id="map_container">
         <div id="map" class="fill"></div>
+    </div>
+	<div class="container fill" id="logs_container">
+        <h1>Logs</h1>
+        <table id="logs_table" class="table-condensed"><thead><tr><td>Filename</td><td>Actions</td></tr></thead><tbody id="logs_table_body"></tbody></table>
+    </div>
+	<div class="container fill" id="videos_container">
+        <h1>Videos</h1>
+        <table id="logs_table" class="table-condensed"><thead><tr><td>Filename</td><td>Actions</td></tr></thead><tbody id="videos_table_body"></tbody></table>
     </div>
 	</body>
 </html>

@@ -39,12 +39,16 @@ var server = http.createServer(function(req, res) {
      
     if(((username == config.server.username) && (password == config.server.password)) || !config.server.require_auth) {
 
-      var  dir = path.join(__dirname, 'static')
-        ,uri = url.parse(req.url).pathname
+      var  
+        uri = url.parse(req.url).pathname
+        ,dir = path.join(__dirname, 'static')
         ,filename = path.join(dir, unescape(uri))
         ,indexFilename = path.join(dir, unescape('index.html'))
+        ,dir_raw = path.join(__dirname)
+        ,filename_raw = path.join(dir_raw, unescape(uri))
         ,stats;
-      
+
+      /* Allow access to static/ folder */
       try
       {
         stats = fs.lstatSync(filename);
@@ -52,6 +56,15 @@ var server = http.createServer(function(req, res) {
       catch (e)
       {
         stats = false;
+      }
+      /* Allow access to logs and videos-folders */
+      try
+      {
+        stats_raw = fs.lstatSync(filename_raw);
+      }
+      catch (e)
+      {
+        stats_raw = false;
       }
 
       if (stats && stats.isFile())
@@ -77,6 +90,20 @@ var server = http.createServer(function(req, res) {
           });
         var fileStream =
           fs.createReadStream(indexFilename)
+          .pipe(res);
+      }
+      else if (stats_raw && stats_raw.isFile() && (uri.substring(0,8)=='/videos/' || uri.substring(0,4)=='/db/'))
+      {
+        // path exists, is a file
+        var mimeType = config.server.mimetypes[path.extname(filename_raw)
+          .split(".")[1]];
+        res.writeHead(200,
+          {
+            'Content-Type': mimeType
+          });
+
+        var fileStream =
+          fs.createReadStream(filename_raw)
           .pipe(res);
       }
       else

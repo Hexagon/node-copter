@@ -11,36 +11,15 @@ var fs = require('fs')
   , crc32 = require('./crc32.js')
   , tcp_server = require('./tcp_server.js')
   , udp_server = require('./udp_server.js')
+  , helpers = require('./helpers.js')
 
   // Include configuration
   , config = require('./config.json');
 
-function getDateTime() {
 
-    var date = new Date();
-
-    var hour = date.getHours();
-    hour = (hour < 10 ? "0" : "") + hour;
-
-    var min  = date.getMinutes();
-    min = (min < 10 ? "0" : "") + min;
-
-    var sec  = date.getSeconds();
-    sec = (sec < 10 ? "0" : "") + sec;
-
-    var year = date.getFullYear();
-
-    var month = date.getMonth() + 1;
-    month = (month < 10 ? "0" : "") + month;
-
-    var day  = date.getDate();
-    day = (day < 10 ? "0" : "") + day;
-
-    return ''+year+month+day+hour+min+sec;
-
-}
 
 var video_process=null;
+var time_unix_usec=0;
 
 console.log('Initiating datasource ...');
 datasource.Init(function()  {
@@ -93,7 +72,7 @@ datasource.Init(function()  {
 							} else {
 								// Star
 								config.video.cmd_start_options.pop();
-								config.video.cmd_start_options.push(config.video.video_dir+getDateTime()+'.h264');
+								config.video.cmd_start_options.push(config.video.video_dir+helpers.getDateTime()+'.h264');
 								video_process = cp.spawn(config.video.cmd_start_record,config.video.cmd_start_options);
 								socket.emit('gui_recording');
 								video_process.on('close', function (code) {
@@ -116,6 +95,18 @@ datasource.Init(function()  {
 							});
 						});
 
+						socket.on('request_videos', function (data) {
+							fs.readdir('videos/', function(error, stdout){ 
+								socket.emit('videos_result',stdout);
+							});
+						});
+
+						socket.on('request_logs', function (data) {
+							fs.readdir('db/', function(error, stdout){ 
+								socket.emit('logs_result',stdout);
+							});
+						});
+
 						// Handle socket.io errors
 						socket.on('error', function (err) {
 							console.log('Socket.io connection error: ' + err.errno);
@@ -132,15 +123,34 @@ datasource.Init(function()  {
 		        			io.sockets.emit(item,fieldstring);
 		        		});
 					});
+					mavlink_wrapper.m.on('RAW_IMU',function(message,fields) {
+						// Always keep track of current usec, used for synchronizing logs
+						time_unix_usec = fields.time_usec;
+	        		});
 
-					// Sign up for some messages with checksum restriction
-					var listen_for_restricted = ['GPS_RAW_INT','ATTITUDE','VFR_HUD','GPS_GLOBAL_ORIGIN'],
+					// Sign up for some messages with checksum restriction and logging
+					var listen_for_restricted = ['GPS_RAW_INT','ATTITUDE','VFR_HUD'],
 						listen_for_restricted_array = new Array();
 					listen_for_restricted.forEach(function(item) { 
 						console.log('Listening for ' + item);
 						mavlink_wrapper.m.on(item,function(message,fields) {
-							var fieldstring = JSON.stringify(fields)
-								,checksum = crc32.crc32(fieldstring);
+
+							var t_recv = time_unix_usec
+								,fieldstring = JSON.stringify(fields)
+								,checksum = crc32.crc32(fieldstring)
+								,query_fields = ""
+								,query_values = "";
+
+							for (var key in fields) {
+							   query_fields += key + ","
+							   query_values += fields[key] + ","
+							}	
+
+							query_fields = query_fields.replace(/(\s+)?.$/, '');
+							query_values = query_values.replace(/(\s+)?.$/, '');
+
+							datasource.db.exec("INSERT INTO " + item + "(ref_usec," + query_fields + ") VALUES ("+t_recv+","+query_values+")");
+
 							if(listen_for_restricted_array[item]!=checksum) {
 								if(listen_for_restricted_array[item]==undefined) {
 									console.log('New mtype: ' + item);
@@ -148,6 +158,7 @@ datasource.Init(function()  {
 								listen_for_restricted_array[item] = checksum;
 								io.sockets.emit(item,fieldstring);
 							}
+
 		        		});
 					});
 
