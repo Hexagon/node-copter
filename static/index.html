@@ -129,7 +129,7 @@
 					for(i in data) {
 						var item = data[i];
 						if(item!='.gitignore'&&item.substr(item.length-1,1)!='l') {
-							document.getElementById('logs_table_body').innerHTML += '<td>'+item+'</td><td><a href="db/'+item+'" target="blank">Download</a></td>';
+							document.getElementById('logs_table_body').innerHTML += '<td>'+item+'</td><td><a href="db/'+item+'" target="blank">Download</a> | <a href="export/kml/'+item+'" target="blank">Export KML</a></td>';
 						}
 					}
 				});

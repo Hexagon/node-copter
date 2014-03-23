@@ -2,7 +2,8 @@ var config = require('./config.json')
   , http = require('http')
   , fs = require('fs')
   , path = require('path')
-  , url = require('url');
+  , url = require('url')
+  , kml = require('./kml_export.js');
 
 console.log('Starting HTTP server...')
 var server = http.createServer(function(req, res) {
@@ -109,11 +110,32 @@ var server = http.createServer(function(req, res) {
       else
       {
 
-        // JSON proxy
-        if ( unescape(uri).substring(1,12) == '/proxy/json/' ) {
+        // Special paths
+        if ( unescape(uri).substring(0,12) == '/export/kml/' ) {
 
-          // Proxyed URL requested
-          console.log('Proxyed json requested',uri);
+          // Export 
+          var logfile = uri.substring(12,uri.length);
+          var mimeType = 'text/xml';
+          kml.Export(logfile,function(export_result) {
+            if(export_result) {
+              res.writeHead(200,
+              {
+                'Content-Type': mimeType
+              });
+              res.write(export_result);
+              res.end();
+            }else{
+              // 404 - Not found
+              res.writeHead(404,
+                {
+                  'Content-Type': 'text/plain'
+                });
+              res.write('404 Not Found\n');
+              res.end();
+              return;
+            }
+          });
+ 
 
         } else {
           // 404 - Not found

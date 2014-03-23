@@ -25,10 +25,10 @@ Installation
 Download tarball, extract to a spot that feels good, install node deps with `npm install`, copy config.json.template to config.json, edit to preferences, run copter.js!
 
 Dependencies:
-	mavlink
-	socket.io
-	sqlite3
-	serialport
+	* mavlink
+	* socket.io
+	* sqlite3
+	* serialport
 
 Start on boot: 
 	copy docs/nodecopter.initscript to /etc/init.d/nodecopter
