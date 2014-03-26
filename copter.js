@@ -1,28 +1,26 @@
 // Include node.js modules
-var fs = require('fs')
-  , socketio = require('socket.io')
-  , path = require('path')
-  , cp = require('child_process')
+var	fs = require('fs')
+	, socketio = require('socket.io')
+	, path = require('path')
+	, cp = require('child_process')
 
-  // Include copter.js modules
-  , server = require('./server.js')
-  , datasource = require('./datasource.js')
-  , mavlink_wrapper = require('./mavlink_wrapper.js')
-  , crc32 = require('./crc32.js')
-  , tcp_server = require('./tcp_server.js')
-  , udp_server = require('./udp_server.js')
-  , helpers = require('./helpers.js')
+	// Include node-copter modules
+	, server = require('./server.js')
+	, datasource = require('./datasource.js')
+	, mavlink_wrapper = require('./mavlink_wrapper.js')
+	, crc32 = require('./crc32.js')
+	, tcp_server = require('./tcp_server.js')
+	, udp_server = require('./udp_server.js')
+	, helpers = require('./helpers.js')
 
-  // Include configuration
-  , config = require('./config.json');
-
-
+	// Include configuration
+	, config = require('./config.json');
 
 var video_process=null;
 var time_unix_usec=0;
 
 console.log('Initiating datasource ...');
-datasource.Init(function()  {
+datasource.Init(function() {
 
 	console.log('Initiating mavlink ...');
 	mavlink_wrapper.Init(config.mavlink.port,config.mavlink.baudrate,
@@ -33,29 +31,29 @@ datasource.Init(function()  {
 			var tcp_done_func = function() {
 				var udp_done_func = function() {
 
-				    // Relaying stuff
-				    if(config.udp_relay.enable||config.tcp_relay.enable) {
-					    mavlink_wrapper.on_raw = function(data){
-					    	if(config.tcp_relay.enable) tcp_server.broadcast(data);
-					    	if(config.udp_relay.enable) udp_server.broadcast(data);
-					    };
+					// Relaying stuff
+					if(config.udp_relay.enable||config.tcp_relay.enable) {
+						mavlink_wrapper.on_raw = function(data){
+							if(config.tcp_relay.enable) tcp_server.broadcast(data);
+							if(config.udp_relay.enable) udp_server.broadcast(data);
+						};
 					}
-				    tcp_server.received = function(data){
-				    	mavlink_wrapper.send_raw(data);
-				    };
-				  	udp_server.received = function(data){
-				    	mavlink_wrapper.send_raw(data);
-				    };
+					tcp_server.received = function(data){
+						mavlink_wrapper.send_raw(data);
+					};
+					udp_server.received = function(data){
+						mavlink_wrapper.send_raw(data);
+					};
 
 					console.log('Initiating websockets ...');
 
-				    // Start listening, disable on screen logging
-				    var io = socketio.listen(server).set('log level', 0);
+					// Start listening, disable on screen logging
+					var io = socketio.listen(server).set('log level', 0);
 
-				    // On connection callback
-				    io.on('connection', function (socket) {
+					// On connection callback
+					io.on('connection', function (socket) {
 
-				    	// On incoming message callback (has currently no use)
+						// On incoming message callback (has currently no use)
 						socket.on('gui_reboot', function (data) {
 							console.log('gui_reboot');
 							socket.emit('gui_rebooting');
@@ -67,7 +65,7 @@ datasource.Init(function()  {
 								// Kill
 								video_process.kill('SIGUSR1'); // End video
 								setTimeout(function(){
-								    if(video_process)video_process.kill('SIGHUP'); // One more is needed sometimes
+									if(video_process)video_process.kill('SIGHUP'); // One more is needed sometimes
 								}, 1000);
 							} else {
 								// Star
@@ -112,7 +110,7 @@ datasource.Init(function()  {
 							console.log('Socket.io connection error: ' + err.errno);
 						});
 
-				    });
+					});
 
 					// Sign up for continous messages
 					var listen_for = ['HEARTBEAT'];
@@ -120,13 +118,13 @@ datasource.Init(function()  {
 						console.log('Listening for ' + item);
 						mavlink_wrapper.m.on(item,function(message,fields) {
 							var fieldstring = JSON.stringify(fields);
-		        			io.sockets.emit(item,fieldstring);
-		        		});
+							io.sockets.emit(item,fieldstring);
+						});
 					});
 					mavlink_wrapper.m.on('RAW_IMU',function(message,fields) {
 						// Always keep track of current usec, used for synchronizing logs
 						time_unix_usec = fields.time_usec;
-	        		});
+					});
 
 					// Sign up for some messages with checksum restriction and logging
 					var listen_for_restricted = ['GPS_RAW_INT','ATTITUDE','VFR_HUD'],
@@ -142,8 +140,8 @@ datasource.Init(function()  {
 								,query_values = "";
 
 							for (var key in fields) {
-							   query_fields += key + ","
-							   query_values += fields[key] + ","
+								query_fields += key + ","
+								query_values += fields[key] + ","
 							}	
 
 							query_fields = query_fields.replace(/(\s+)?.$/, '');
@@ -159,13 +157,13 @@ datasource.Init(function()  {
 								io.sockets.emit(item,fieldstring);
 							}
 
-		        		});
+						});
 					});
 
-				    // Handle socket.io errors
-				    io.on('error', function (err) {
-				      console.log('Socket.io Error: ' + err.errno);
-				    });
+					// Handle socket.io errors
+					io.on('error', function (err) {
+						console.log('Socket.io Error: ' + err.errno);
+					});
 				};
 				
 				if(config.udp_relay.enable) {
