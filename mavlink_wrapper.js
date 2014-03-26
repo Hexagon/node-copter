@@ -18,13 +18,13 @@ module.exports = {
 				});
 				me.m.createMessage("REQUEST_DATA_STREAM", {
 					'req_message_rate': 2,
-	                'req_stream_id': 0,
-	                'start_stop': 1,
-	                'target_system': 1,
-	                'target_component': 0,
+					'req_stream_id': 0,
+					'start_stop': 1,
+					'target_system': 1,
+					'target_component': 0,
 				}, function(message) {
-	           		me.port.write(message.buffer);
-	        	});
+					me.port.write(message.buffer);
+				});
 				readyfunc();
 			});
 		});
